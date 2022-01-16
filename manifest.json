@@ -1,0 +1,12 @@
+{
+  "name": "Make Wordle Accessible",
+  "manifest_version": 3,
+  "version": "0.1",
+  "description": "Makes the popular game Wordle accessible to screen-reader users.",
+  "content_scripts": [
+    {
+      "matches": ["https://www.powerlanguage.co.uk/wordle/"],
+      "js": ["wordle-script.js"]
+    }
+  ]
+}
