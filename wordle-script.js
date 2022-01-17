@@ -55,46 +55,30 @@ let fix = (elem, makeClickable, role, label) => {
     }
 }
 
-let fixTile = tile => {
-    console.log('Fixing tile:');
-    console.log(tile);
-    let newLabel = (tile.getAttribute('letter') || '') + ' ' +
-        (tile.getAttribute('evaluation') || '');
-    if (newLabel != tile.getAttribute('aria-label')) {
-	setAttribute(tile, 'aria-label', newLabel);
-    }
-}
-
-let tileObserver = new MutationObserver((mutationsList, observer) => {
+let masterObserver = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
-        fixTile(mutation.target);
+        let elem = mutation.target;
+	let newLabel = '';
+	['letter', 'evaluation', 'data-key', 'data-state'].forEach(attr => {
+	    let value = elem.getAttribute(attr);
+	    if (value) {
+		newLabel += ' ' + value;
+	    }
+	});
+	if (newLabel != elem.getAttribute('aria-label')) {
+	    setAttribute(elem, 'aria-label', newLabel);
+	}
     }
 });
 
 let watchTile = (tile) => {
     fix(tile, false, 'tile', 'Empty');
     setAttribute(tile, 'aria-live', 'polite');
-    tileObserver.observe(tile, { attributes: true });
+    masterObserver.observe(tile, { attributes: true });
 }
-
-let fixKey = (key) => {
-    console.log('Fixing key:');
-    console.log(key);
-    let newLabel = (key.getAttribute('data-key') || '') + ' ' +
-        (key.getAttribute('data-state') || '');
-    if (newLabel != key.getAttribute('aria-label')) {
-	setAttribute(key, 'aria-label', newLabel);
-    }
-}
-
-let keyObserver = new MutationObserver((mutationsList, observer) => {
-    for (let mutation of mutationsList) {
-        fixKey(mutation.target);
-    }
-});
 
 let watchKey = (key) => {
-    keyObserver.observe(key, { attributes: true });
+    masterObserver.observe(key, { attributes: true });
 }
 
 let checkboxObserver = new MutationObserver((mutationsList, observer) => {
