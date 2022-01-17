@@ -74,7 +74,7 @@ let tileObserver = new MutationObserver((mutationsList, observer) => {
 let watchTile = (tile) => {
     fix(tile, false, 'tile', 'Empty');
     setAttribute(tile, 'aria-live', 'polite');
-    tileObserver.observe(tile, { attributes: true, childList: false, subtree: false });
+    tileObserver.observe(tile, { attributes: true });
 }
 
 let fixKey = (key) => {
@@ -94,7 +94,7 @@ let keyObserver = new MutationObserver((mutationsList, observer) => {
 });
 
 let watchKey = (key) => {
-    keyObserver.observe(key, { attributes: true, childList: false, subtree: false });
+    keyObserver.observe(key, { attributes: true });
 }
 
 let checkboxObserver = new MutationObserver((mutationsList, observer) => {
@@ -113,7 +113,7 @@ let watchCheckbox = (checkbox) => {
 	setAttribute(checkbox, 'aria-checked',
 			      checkbox.hasAttribute('checked'));
     }
-    checkboxObserver.observe(checkbox, { attributes: true, childList: false, subtree: false });
+    checkboxObserver.observe(checkbox, { attributes: true });
 }
 
 let app;
@@ -150,7 +150,7 @@ let modalObserver = new MutationObserver((mutationsList, observer) => {
 
 let watchModal = (modal) => {
     previousModalState = modal.hasAttribute('open');
-    modalObserver.observe(modal,  { attributes: true, childList: false, subtree: false });
+    modalObserver.observe(modal,  { attributes: true });
 }
 
 let previousGamePageState;
@@ -218,7 +218,7 @@ let gamePageObserver = new MutationObserver((mutationsList, observer) => {
 
 let watchGamePage = (gamePage) => {
     previousGamePageState = gamePage.hasAttribute('open');
-    gamePageObserver.observe(gamePage,  { attributes: true, childList: false, subtree: false });
+    gamePageObserver.observe(gamePage,  { attributes: true });
 };
 
 let applyFixes = () => {
