@@ -68,6 +68,15 @@ let masterFixer = (elem) => {
     }
 };
 
+let fixAllTiles = (root) => {
+    let tiles = shadowQueryAll(root, 'game-tile');
+    console.log('Tiles: ' + tiles.length);
+    for (let j = 0; j < tiles.length; j++) {
+	fix(tiles[j], true, 'tile', 'Tile');
+	masterFixer(tiles[j]);
+    }
+};
+
 let masterObserver = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
 	masterFixer(mutation.target);
@@ -183,14 +192,9 @@ let gamePageObserver = new MutationObserver((mutationsList, observer) => {
 		console.log('Game helps: ' + help);
 		if (help) {
 		    setAttribute(gamePage, 'aria-label', 'Help Modal');
-		    
-		    let tiles = shadowQueryAll(help, 'game-tile');
-		    console.log('Tiles: ' + tiles.length);
-		    for (let j = 0; j < tiles.length; j++) {
-			fix(tiles[j], true, 'tile', 'Tile');
-			masterFixer(tiles[j]);
-		    }
 
+		    fixAllTiles(help);
+		    
 		    close.focus();
 		}
 	    } else {
@@ -232,12 +236,7 @@ let applyFixes = () => {
         let help = shadowQuery(app, 'game-help');
 	console.log('Help: ' + help);
 	if (help) {
-	    let tiles = shadowQueryAll(help, 'game-tile');
-	    console.log('Tiles: ' + tiles.length);
-	    for (let j = 0; j < tiles.length; j++) {
-		fix(tiles[j], true, 'tile', 'Tile');
-                masterFixer(tiles[j]);
-	    }
+	    fixAllTiles(help);
 	}
 
 	let toasters = shadowQueryAll(app, '.toaster');
