@@ -1,20 +1,38 @@
-// Quick fixes to make Wordle accessible to screen reader users.
+'use strict';
 
-function fix(elem, makeClickable, role, label) {
+let setAttribute = (elem, attr, value) => {
+    elem.setAttribute(attr, value);
+}
+
+let shadowQuery = (elem, query) => {
+    let root = elem.shadowRoot;
+    if (!root)
+	return null;
+    return root.querySelector(query);
+};
+
+let shadowQueryAll = (elem, query) => {
+    let root = elem.shadowRoot;
+    if (!root)
+	return [];
+    return root.querySelectorAll(query);
+};
+
+let fix = (elem, makeClickable, role, label) => {
     if (role) {
 	if (role == 'tile') {
-            elem.setAttribute('role', 'img');
-            elem.setAttribute('aria-roledescription', 'tile');
+            setAttribute(elem, 'role', 'img');
+            setAttribute(elem, 'aria-roledescription', 'tile');
 	} else {
-            elem.setAttribute('role', role);
+            setAttribute(elem, 'role', role);
 	}
         if (role == 'dialog') {
-            elem.setAttribute('aria-modal', true);
+            setAttribute(elem, 'aria-modal', true);
         }
     }
 
     if (label) {
-        elem.setAttribute('aria-label', label);
+        setAttribute(elem, 'aria-label', label);
     }
     
     if (makeClickable) {
@@ -26,9 +44,9 @@ function fix(elem, makeClickable, role, label) {
             if (e.code == 'Enter' || e.code == 'Space') {
                 e.stopPropagation();
                 e.preventDefault();
-		if (elem.shadowRoot &&
-		    elem.shadowRoot.querySelector('div.switch')) {
-		    elem.shadowRoot.querySelector('div.switch').click();
+		let switchChild = shadowQuery(elem, 'div.switch');
+		if (switchChild) {
+		    switchChild.click();
 		} else {
                     elem.click();
 		}
@@ -37,13 +55,13 @@ function fix(elem, makeClickable, role, label) {
     }
 }
 
-function fixTile(tile) {
+let fixTile = tile => {
     console.log('Fixing tile:');
     console.log(tile);
-    newLabel = (tile.getAttribute('letter') || '') + ' ' +
+    let newLabel = (tile.getAttribute('letter') || '') + ' ' +
         (tile.getAttribute('evaluation') || '');
     if (newLabel != tile.getAttribute('aria-label')) {
-	tile.setAttribute('aria-label', newLabel);
+	setAttribute(tile, 'aria-label', newLabel);
     }
 }
 
@@ -53,19 +71,19 @@ let tileObserver = new MutationObserver((mutationsList, observer) => {
     }
 });
 
-function watchTile(tile) {
+let watchTile = (tile) => {
     fix(tile, false, 'tile', 'Empty');
-    tile.setAttribute('aria-live', 'polite');
+    setAttribute(tile, 'aria-live', 'polite');
     tileObserver.observe(tile, { attributes: true, childList: false, subtree: false });
 }
 
-function fixKey(key) {
+let fixKey = (key) => {
     console.log('Fixing key:');
     console.log(key);
-    newLabel = (key.getAttribute('data-key') || '') + ' ' +
+    let newLabel = (key.getAttribute('data-key') || '') + ' ' +
         (key.getAttribute('data-state') || '');
     if (newLabel != key.getAttribute('aria-label')) {
-	key.setAttribute('aria-label', newLabel);
+	setAttribute(key, 'aria-label', newLabel);
     }
 }
 
@@ -75,7 +93,7 @@ let keyObserver = new MutationObserver((mutationsList, observer) => {
     }
 });
 
-function watchKey(key) {
+let watchKey = (key) => {
     keyObserver.observe(key, { attributes: true, childList: false, subtree: false });
 }
 
@@ -84,15 +102,15 @@ let checkboxObserver = new MutationObserver((mutationsList, observer) => {
 	let checkbox = mutation.target;
 	let newAttr = '' + checkbox.hasAttribute('checked');
 	if (newAttr != checkbox.getAttribute('aria-checked')) {
-	    checkbox.setAttribute('aria-checked', newAttr);
+	    setAttribute(checkbox, 'aria-checked', newAttr);
 	}
     }
 });
 
-function watchCheckbox(checkbox) {
+let watchCheckbox = (checkbox) => {
     if (!checkbox.hasAttribute('aria-checked')) {
 	fix(checkbox, true, 'checkbox', checkbox.getAttribute('name'));
-	checkbox.setAttribute('aria-checked',
+	setAttribute(checkbox, 'aria-checked',
 			      checkbox.hasAttribute('checked'));
     }
     checkboxObserver.observe(checkbox, { attributes: true, childList: false, subtree: false });
@@ -111,10 +129,10 @@ let modalObserver = new MutationObserver((mutationsList, observer) => {
 	setTimeout(() => {
 	    if (state) {
 		// Modal is opening, focus inside
-		let stats = app.shadowRoot.querySelector('game-stats');
+		let stats = shadowQuery(app, 'game-stats');
 		console.log('Modal stats: ' + stats);
 		if (stats) {
-		    let button = stats.shadowRoot.querySelector('button');
+		    let button = shadowQuery(stats, 'button');
 		    console.log('Modal button: ' + button);
 		    if (button) {
 			button.focus();
@@ -130,7 +148,7 @@ let modalObserver = new MutationObserver((mutationsList, observer) => {
     previousModalState = state;
 });
 
-function watchModal(modal) {
+let watchModal = (modal) => {
     previousModalState = modal.hasAttribute('open');
     modalObserver.observe(modal,  { attributes: true, childList: false, subtree: false });
 }
@@ -151,35 +169,35 @@ let gamePageObserver = new MutationObserver((mutationsList, observer) => {
 
 	setTimeout(() => {
 	    if (state) {
-		let close = gamePage.shadowRoot.querySelector('game-icon[icon=close]');
+		let close = shadowQuery(gamePage, 'game-icon[icon=close]');
 		console.log('Close: ' + close);
 		if (close) {
                     fix(close, true, 'button', 'Close');
 		}
 
 		// Inside game page could be either settings or help.
-		let gameSettings = app.shadowRoot.querySelector('game-settings');
+		let gameSettings = shadowQuery(app, 'game-settings');
 		console.log('Game settings: ' + gameSettings);
 		if (gameSettings) {
-		    gamePage.setAttribute('aria-label', 'Settings Modal');
-		    let checkboxes = gameSettings.shadowRoot.querySelectorAll('game-switch');
+		    setAttribute(gamePage, 'aria-label', 'Settings Modal');
+		    let checkboxes = shadowQueryAll(gameSettings, 'game-switch');
 		    console.log('Checkboxes: ' + checkboxes.length);
 		    for (let i = 0; i < checkboxes.length; i++)
 			watchCheckbox(checkboxes[i]);
 
-		    let checkbox = gameSettings.shadowRoot.querySelector('game-switch');
+		    let checkbox = shadowQuery(gameSettings, 'game-switch');
 		    console.log('Checkbox: ' + checkbox);
 		    if (checkbox) {
 			checkbox.focus();
 		    }
 		}
 
-		let help = app.shadowRoot.querySelector('game-help');
+		let help = shadowQuery(app, 'game-help');
 		console.log('Game helps: ' + help);
 		if (help) {
-		    gamePage.setAttribute('aria-label', 'Help Modal');
+		    setAttribute(gamePage, 'aria-label', 'Help Modal');
 		    
-		    let tiles = help.shadowRoot.querySelectorAll('game-tile');
+		    let tiles = shadowQueryAll(help, 'game-tile');
 		    console.log('Tiles: ' + tiles.length);
 		    for (let j = 0; j < tiles.length; j++) {
 			fix(tiles[j], true, 'tile', 'Tile');
@@ -198,21 +216,21 @@ let gamePageObserver = new MutationObserver((mutationsList, observer) => {
     previousGamePageState = state;
 });
 
-function watchGamePage(gamePage) {
+let watchGamePage = (gamePage) => {
     previousGamePageState = gamePage.hasAttribute('open');
     gamePageObserver.observe(gamePage,  { attributes: true, childList: false, subtree: false });
-}
+};
 
-function applyFixes() {
+let applyFixes = () => {
     app = document.querySelector('game-app');
     console.log('App: ' + app);
     if (app) {
-        let modal = app.shadowRoot.querySelector('game-modal');
+        let modal = shadowQuery(app, 'game-modal');
         console.log('Modal: ' + modal);
         if (modal) {
             fix(modal, false, 'dialog', 'Pop-up Modal');
 
-            let close = modal.shadowRoot.querySelector('game-icon[icon=close]');
+            let close = shadowQuery(modal, 'game-icon[icon=close]');
             console.log('Close: ' + close);
             if (close) {
                 fix(close, true, 'button', 'Close');
@@ -224,10 +242,10 @@ function applyFixes() {
 
 	watchModal(modal);
 	
-        let help = app.shadowRoot.querySelector('game-help');
+        let help = shadowQuery(app, 'game-help');
 	console.log('Help: ' + help);
 	if (help) {
-	    let tiles = help.shadowRoot.querySelectorAll('game-tile');
+	    let tiles = shadowQueryAll(help, 'game-tile');
 	    console.log('Tiles: ' + tiles.length);
 	    for (let j = 0; j < tiles.length; j++) {
 		fix(tiles[j], true, 'tile', 'Tile');
@@ -235,21 +253,21 @@ function applyFixes() {
 	    }
 	}
 
-	let toasters = app.shadowRoot.querySelectorAll('.toaster');
+	let toasters = shadowQueryAll(app, '.toaster');
 	console.log('Toasters: ' + toasters.length);
 	for (let i = 0; i < toasters.length; i++) {
-	    toasters[i].setAttribute('aria-live', 'polite');
+	    setAttribute(toasters[i], 'aria-live', 'polite');
 	}
 
-        let gamePage = app.shadowRoot.querySelector('game-page');
+        let gamePage = shadowQuery(app, 'game-page');
         console.log('Game page: ' + gamePage);
 	watchGamePage(gamePage);
 
-        let keyboard = app.shadowRoot.querySelector('game-keyboard');
+        let keyboard = shadowQuery(app, 'game-keyboard');
         console.log('Keyboard: ' + keyboard);
 	fix(keyboard, false, 'group', 'Keyboard');
 
-	let keys = keyboard.shadowRoot.querySelectorAll('button[data-key]');
+	let keys = shadowQueryAll(keyboard, 'button[data-key]');
         console.log('Keys: ' + keys.length);
 	for (let i = 0; i < keys.length; i++) {
 	    if (!firstKey) {
@@ -258,16 +276,16 @@ function applyFixes() {
 	    watchKey(keys[i]);
 	}
 
-        let backspace = keyboard.shadowRoot.querySelector('button[data-key=←]');
+        let backspace = shadowQuery(keyboard, 'button[data-key=←]');
         console.log('Backspace: ' + backspace);
         fix(backspace, false, null, 'backspace');
 
-        let rows = app.shadowRoot.querySelectorAll('game-row');
+        let rows = shadowQueryAll(app, 'game-row');
         console.log('Rows: ' + rows.length);
         for (let i = 0; i < rows.length; i++) {
 	    fix(rows[i], false, 'group', 'Row ' + (i + 1));
 
-            let tiles = rows[i].shadowRoot.querySelectorAll('game-tile');
+            let tiles = shadowQueryAll(rows[i], 'game-tile');
             console.log('Tiles: ' + tiles.length);
             for (let j = 0; j < tiles.length; j++) {
                 watchTile(tiles[j]);
@@ -278,7 +296,7 @@ function applyFixes() {
 	extensionCredit.innerHTML = 'Wordle screen reader accessibility extension running.';
 	rows[rows.length - 1].parentElement.appendChild(extensionCredit);
     }
-}
+};
 
 setTimeout(() => {
     applyFixes();
