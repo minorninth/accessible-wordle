@@ -55,19 +55,22 @@ let fix = (elem, makeClickable, role, label) => {
     }
 }
 
+let masterFixer = (elem) => {
+    let newLabel = '';
+    ['letter', 'evaluation', 'data-key', 'data-state'].forEach(attr => {
+	let value = elem.getAttribute(attr);
+	if (value) {
+	    newLabel += ' ' + value;
+	}
+    });
+    if (newLabel != elem.getAttribute('aria-label')) {
+	setAttribute(elem, 'aria-label', newLabel);
+    }
+};
+
 let masterObserver = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
-        let elem = mutation.target;
-	let newLabel = '';
-	['letter', 'evaluation', 'data-key', 'data-state'].forEach(attr => {
-	    let value = elem.getAttribute(attr);
-	    if (value) {
-		newLabel += ' ' + value;
-	    }
-	});
-	if (newLabel != elem.getAttribute('aria-label')) {
-	    setAttribute(elem, 'aria-label', newLabel);
-	}
+	masterFixer(mutation.target);
     }
 });
 
@@ -185,7 +188,7 @@ let gamePageObserver = new MutationObserver((mutationsList, observer) => {
 		    console.log('Tiles: ' + tiles.length);
 		    for (let j = 0; j < tiles.length; j++) {
 			fix(tiles[j], true, 'tile', 'Tile');
-			fixTile(tiles[j]);
+			masterFixer(tiles[j]);
 		    }
 
 		    close.focus();
@@ -233,7 +236,7 @@ let applyFixes = () => {
 	    console.log('Tiles: ' + tiles.length);
 	    for (let j = 0; j < tiles.length; j++) {
 		fix(tiles[j], true, 'tile', 'Tile');
-                fixTile(tiles[j]);
+                masterFixer(tiles[j]);
 	    }
 	}
 
