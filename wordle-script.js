@@ -29,7 +29,7 @@ let fix = (elem, makeClickable, role, label) => {
             setAttribute(elem, 'role', role);
 	}
         if (role == 'dialog') {
-            setAttribute(elem, 'aria-modal', true);
+            setAttribute(elem, 'aria-modal', false);
         }
     }
 
