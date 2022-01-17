@@ -1,5 +1,7 @@
 'use strict';
 
+let s = () => {
+
 let setAttribute = (elem, attr, value) => {
     elem.setAttribute(attr, value);
 }
@@ -287,3 +289,8 @@ let applyFixes = () => {
 setTimeout(() => {
     applyFixes();
 }, 1000);
+
+
+};
+s();
+
