@@ -88,6 +88,7 @@ let masterObserver = new MutationObserver((mutationsList, observer) => {
 let watchTile = (tile) => {
     fix(tile, false, 'tile', 'Empty');
     setAttribute(tile, 'aria-live', 'polite');
+    masterFixer(tile);
     masterObserver.observe(tile, { attributes: true });
 }
 
