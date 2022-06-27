@@ -1,7 +1,7 @@
 {
   "name": "Make Wordle Accessible",
   "manifest_version": 3,
-  "version": "0.3",
+  "version": "0.4",
   "description": "Makes the popular game Wordle accessible to screen-reader users.",
   "content_scripts": [
     {
